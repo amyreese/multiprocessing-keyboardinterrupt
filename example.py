@@ -23,18 +23,13 @@ def poolExample():
         pool.apply_async(run_worker)
 
     try:
-        print "Waiting 10 seconds"
-        time.sleep(10)
+        print "Waiting"
+        pool.close()
+        pool.join()
 
     except KeyboardInterrupt:
         print "Caught KeyboardInterrupt, terminating workers"
         pool.terminate()
-        pool.join()
-
-    else:
-        print "Quitting normally"
-        pool.close()
-        pool.join()
 
 
 class ConsumerProcess( multiprocessing.Process ):
