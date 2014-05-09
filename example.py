@@ -7,12 +7,15 @@ import multiprocessing
 import signal
 import time
 
+
 def init_worker():
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+
 def run_worker():
     time.sleep(15)
-    
+
+
 def poolExample():
     print "Initializng 5 workers"
     pool = multiprocessing.Pool(5, init_worker)
@@ -36,22 +39,22 @@ def poolExample():
         pool.join()
 
 
-class ConsumerProcess( multiprocessing.Process ):
-    def __init__( self, q, *args, **kwargs ):
+class ConsumerProcess(multiprocessing.Process):
+    def __init__(self, q, *args, **kwargs):
         self.q = q
-        super( ConsumerProcess, self ).__init__( *args, **kwargs )
+        super(ConsumerProcess, self).__init__(*args, **kwargs)
         self.start()
 
-    def run( self ):
+    def run(self):
         init_worker()
         ps = []
-        for d in iter( self.q.get, None ):
-            if( d == 'killjobs' ):
+        for d in iter(self.q.get, None):
+            if(d == 'killjobs'):
                 for p in ps:
                     p.terminate()
 
-            else:    
-                ps.append( multiprocessing.Process( target=run_worker ) )
+            else:
+                ps.append(multiprocessing.Process(target=run_worker))
                 ps[-1].daemon = True
                 ps[-1].start()
 
@@ -63,25 +66,25 @@ def processExample():
     print "Initializing consumer process"
     q = multiprocessing.Queue()
 
-    p = ConsumerProcess( q )
+    p = ConsumerProcess(q)
 
     print "Starting 3 jobs of 15 seconds each"
     for i in range(3):
-        q.put( i )
+        q.put(i)
 
     try:
         print "Waiting 10 seconds"
-        time.sleep( 10 )
+        time.sleep(10)
 
     except KeyboardInterrupt:
         print "Caught KeyboardInterrupt, terminating consumer"
-        q.put( 'killjobs' )
+        q.put('killjobs')
 
     else:
         print "Quitting normally"
 
     finally:
-        q.put( None )
+        q.put(None)
         q.close()
         p.join()
 
