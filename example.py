@@ -4,7 +4,6 @@
 # Licensed under the MIT License
 
 import multiprocessing
-import os
 import signal
 import time
 
