@@ -3,6 +3,7 @@
 # Copyright (c) 2011 John Reese
 # Licensed under the MIT License
 
+import datetime
 import multiprocessing
 import signal
 import time
@@ -17,24 +18,33 @@ def run_worker():
 
 
 def poolExample():
-    print "Initializng 5 workers"
+    now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    print "{0} Initializing 5 workers (each sleeps for 15 seconds)".format(now)
     pool = multiprocessing.Pool(5, init_worker)
 
-    print "Starting 3 jobs of 15 seconds each"
+    running = dict()
     for i in range(3):
-        pool.apply_async(run_worker)
+        result_obj = pool.apply_async(run_worker)
+        running[result_obj] = result_obj.ready()
 
     try:
-        print "Waiting 10 seconds"
-        time.sleep(10)
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print "{0} Waiting until all workers have completed".format(now)
+        while False in running.values():
+            for result_obj in running:
+                running[result_obj] = result_obj.ready()
 
     except KeyboardInterrupt:
-        print "Caught KeyboardInterrupt, terminating workers"
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print
+        print "{0} Caught KeyboardInterrupt, terminating workers".format(now)
         pool.terminate()
         pool.join()
+        return
 
     else:
-        print "Quitting normally"
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print "{0} Quitting normally".format(now)
         pool.close()
         pool.join()
 
@@ -47,12 +57,11 @@ class ConsumerProcess(multiprocessing.Process):
 
     def run(self):
         init_worker()
-        ps = []
+        ps = list()
         for d in iter(self.q.get, None):
-            if(d == 'killjobs'):
+            if d == "killjobs":
                 for p in ps:
                     p.terminate()
-
             else:
                 ps.append(multiprocessing.Process(target=run_worker))
                 ps[-1].daemon = True
@@ -63,25 +72,31 @@ class ConsumerProcess(multiprocessing.Process):
 
 
 def processExample():
-    print "Initializing consumer process"
+    now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    print "{0} Initializing consumer process".format(now)
     q = multiprocessing.Queue()
 
     p = ConsumerProcess(q)
 
-    print "Starting 3 jobs of 15 seconds each"
+    now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    print "{0} Starting 3 jobs (each sleeps for 15 seconds)".format(now)
     for i in range(3):
         q.put(i)
 
     try:
-        print "Waiting 10 seconds"
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print "{0} Waiting 10 seconds".format(now)
         time.sleep(10)
 
     except KeyboardInterrupt:
-        print "Caught KeyboardInterrupt, terminating consumer"
-        q.put('killjobs')
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print
+        print "{0} Caught KeyboardInterrupt, terminating consumer".format(now)
+        q.put("killjobs")
 
     else:
-        print "Quitting normally"
+        now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print "{0} Quitting normally".format(now)
 
     finally:
         q.put(None)
@@ -92,3 +107,5 @@ def processExample():
 if __name__ == "__main__":
     poolExample()
     processExample()
+    now = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    print "{0} Done".format(now)
