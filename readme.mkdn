@@ -1,5 +1,6 @@
-This code is an example of how to handle Python's KeyboardInterrupt while also using the multiprocessing
-module's Pool for managing a set of worker processes.  For more information, visit:
+This code is an example of how to handle Python's KeyboardInterrupt while also
+using the multiprocessing module's Pool for managing a set of worker processes.
+For more information, visit:
 
 * http://noswap.com/blog/python-multiprocessing-keyboardinterrupt/
 
